@@ -150,7 +150,7 @@
             const dataObj = {};
             formData.forEach((value, key) => dataObj[key] = value);
             try {
-                const response = await fetch('https://sheetdb.io/api/v1/pmf5bt5s7m6tq', {
+                const response = await fetch('https://sheetdb.io/api/v1/pmf5bt5s7m6tq?sheet=CADASTRO', { // Linha modificada
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: [dataObj] })
