@@ -57,25 +57,25 @@
             <div class="column">
                 <div class="card">
                     <h2>Cadastro Básico</h2>
-                    <input type="date" id="data" name="data" required>
-                    <select id="prefeitura" name="prefeitura" required></select>
-                    <select id="analista" name="analista" required></select>
-                    <select id="folha" name="folha" required></select>
+                    <input type="date" id="data" name="DATA" required>
+                    <select id="prefeitura" name="PREFEITURA" required></select>
+                    <select id="analista" name="ANALISTA" required></select>
+                    <select id="folha" name="FOLHA" required></select>
                 </div>
                 <div class="card">
                     <h2>Situação da Verba</h2>
-                    <select id="verba" name="verba" required></select>
-                    <select id="status" name="status" required></select>
-                    <select id="situacao" name="situacao" required></select>
-                    <select id="apontamento" name="apontamento" required></select>
+                    <select id="verba" name="VERBA" required></select>
+                    <select id="status" name="STATUS" required></select>
+                    <select id="situacao" name="SITUACAO" required></select>
+                    <select id="apontamento" name="APONTAMENTO" required></select>
                 </div>
             </div>
             <div class="column">
                 <div class="card">
                     <h2>Análise Jurídica e Descrição da Norma aplicada</h2>
-                    <select id="legislacao" name="legislacao" required></select>
-                    <textarea id="descricao" name="descricao" placeholder="Descrição da Norma aplicada" required></textarea>
-                    <textarea id="analise" name="analise" placeholder="Análise, Fundamentação e Orientação do Analista" required></textarea>
+                    <select id="legislacao" name="LEGISLACAO" required></select>
+                    <textarea id="descricao" name="DESCRICAO" placeholder="Descrição da Norma aplicada" required></textarea>
+                    <textarea id="analise" name="ANALISE" placeholder="Análise, Fundamentação e Orientação do Analista" required></textarea>
                     <button type="submit" class="btn-cadastrar">Cadastrar Análise</button>
                 </div>
             </div>
@@ -150,7 +150,7 @@
             const dataObj = {};
             formData.forEach((value, key) => dataObj[key] = value);
             try {
-                const response = await fetch('https://sheetdb.io/api/v1/pmf5bt5s7m6tq?sheet=CADASTRO', { // Linha modificada
+                const response = await fetch('https://sheetdb.io/api/v1/pmf5bt5s7m6tq?sheet=CADASTRO', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: [dataObj] })
@@ -159,10 +159,13 @@
                     alert('Cadastro realizado com sucesso!');
                     this.reset();
                 } else {
-                    alert('Erro ao enviar os dados.');
+                    const errorData = await response.json();
+                    console.error('Erro:', response.status, errorData);
+                    alert(`Erro ao enviar os dados: ${response.status} - ${JSON.stringify(errorData)}`); // Alerta mais informativo
                 }
             } catch (error) {
                 console.error('Erro no envio:', error);
+                alert('Ocorreu um erro de rede. Tente novamente mais tarde.');
             }
         });
 
