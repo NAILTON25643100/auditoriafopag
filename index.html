@@ -18,9 +18,6 @@
             width: 45%;
             margin: 10px;
         }
-        .column:nth-child(2) {
-            width: 50%;
-        }
         .card {
             border: 1px solid #ccc;
             padding: 20px;
@@ -51,7 +48,6 @@
     </style>
 </head>
 <body>
-
     <form id="dataForm">
         <div class="container">
             <div class="column">
@@ -81,99 +77,116 @@
             </div>
         </div>
     </form>
-
     <script>
-        async function carregarLista(idCampo, coluna) {
-            try {
-                const response = await fetch(`https://sheetdb.io/api/v1/pmf5bt5s7m6tq?sheet=VALIDACAO`);
-                const data = await response.json();
-                const valoresUnicos = [...new Set(data.map(item => item[coluna]))].sort();
-                const selectCampo = document.getElementById(idCampo);
-                selectCampo.innerHTML = `<option value="">Selecione um ${idCampo}</option>`;
-                valoresUnicos.forEach(valor => {
-                    const option = document.createElement('option');
-                    option.value = valor;
-                    option.textContent = valor;
-                    selectCampo.appendChild(option);
-                });
-            } catch (error) {
-                console.error(`Erro ao carregar ${idCampo}:`, error);
-            }
-        }
+        const scriptURL = "https://script.google.com/macros/s/AKfycby-Cuy9TRV2ANsGdBF4fpbNJ9Q0--HkIgOkJAZHJrvv70Z8gR1HZelxKiMwtUeQpTbFJw/exec"; // Substitua pelo seu URL
 
-        async function carregarPrefeituras() {
-            try {
-                const response = await fetch(`https://sheetdb.io/api/v1/pmf5bt5s7m6tq?sheet=MUNICIPIO`);
-                const data = await response.json();
-                const prefeituras = [...new Set(data.map(item => item.PREFEITURA))].sort();
-                const selectPrefeitura = document.getElementById('prefeitura');
-                selectPrefeitura.innerHTML = '<option value="">Selecione uma prefeitura</option>';
-                prefeituras.forEach(prefeitura => {
-                    const option = document.createElement('option');
-                    option.value = prefeitura;
-                    option.textContent = prefeitura;
-                    selectPrefeitura.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Erro ao carregar prefeituras:', error);
-            }
-        }
+        // Função para buscar dados da planilha e popular um select
+        function carregarDadosParaSelect(funcao, selectId) {
+            google.script.run.withSuccessHandler(data => {
+                const select = document.getElementById(selectId);
+                select.innerHTML = ''; // Limpa as opções existentes
+                const optionVazia = document.createElement('option');
+                optionVazia.value = '';
+                select.appendChild(optionVazia);
 
-        async function carregarFiltrado(idCampo, aba, coluna, prefeitura) {
-            try {
-                const response = await fetch(`https://sheetdb.io/api/v1/pmf5bt5s7m6tq?sheet=${aba}`);
-                const data = await response.json();
-                const filtrados = [...new Set(data.filter(item => item.PREFEITURA === prefeitura).map(item => item[coluna]))].sort();
-                const selectCampo = document.getElementById(idCampo);
-                selectCampo.innerHTML = `<option value="">Selecione um ${idCampo}</option>`;
-                filtrados.forEach(valor => {
-                    const option = document.createElement('option');
-                    option.value = valor;
-                    option.textContent = valor;
-                    selectCampo.appendChild(option);
-                });
-            } catch (error) {
-                console.error(`Erro ao carregar ${idCampo}:`, error);
-            }
-        }
-
-        document.getElementById('prefeitura').addEventListener('change', function () {
-            const prefeitura = this.value;
-            carregarFiltrado('verba', 'RESUMO', 'VERBA', prefeitura);
-            carregarFiltrado('folha', 'RESUMO', 'FOLHA', prefeitura);
-            carregarFiltrado('legislacao', 'LEGISLACAO', 'LEI', prefeitura);
-        });
-
-        document.getElementById('dataForm').addEventListener('submit', async function (event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            const dataObj = {};
-            formData.forEach((value, key) => dataObj[key] = value);
-            try {
-                const response = await fetch('https://sheetdb.io/api/v1/pmf5bt5s7m6tq?sheet=CADASTRO', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [dataObj] })
-                });
-                if (response.ok) {
-                    alert('Cadastro realizado com sucesso!');
-                    this.reset();
-                } else {
-                    const errorData = await response.json();
-                    console.error('Erro:', response.status, errorData);
-                    alert(`Erro ao enviar os dados: ${response.status} - ${JSON.stringify(errorData)}`); // Alerta mais informativo
+                if (data.error) {
+                    console.error(data.error);
+                    return;
                 }
-            } catch (error) {
-                console.error('Erro no envio:', error);
-                alert('Ocorreu um erro de rede. Tente novamente mais tarde.');
+                data.forEach(value => {
+                    const option = document.createElement('option');
+                    option.value = value; // Valor da coluna
+                    option.text = value;  // Texto exibido
+                    select.appendChild(option);
+                });
+            })[funcao](); // Chama a função correspondente
+        }
+
+        // Função para carregar dados filtrados por prefeitura
+        function carregarDadosFiltrados(funcao, selectId, prefeitura) {
+            google.script.run.withSuccessHandler(data => {
+                const select = document.getElementById(selectId);
+                select.innerHTML = ''; // Limpa as opções existentes
+                const optionVazia = document.createElement('option');
+                optionVazia.value = '';
+                select.appendChild(optionVazia);
+
+                if (data.error) {
+                    console.error(data.error);
+                    return;
+                }
+                data.forEach(value => {
+                    const option = document.createElement('option');
+                    option.value = value; // Valor da coluna
+                    option.text = value;  // Texto exibido
+                    select.appendChild(option);
+                });
+            })[funcao](prefeitura); // Chama a função correspondente com o filtro
+        }
+
+        // Carrega os dados iniciais
+        carregarDadosParaSelect('buscarPrefeituras', 'prefeitura');   // Prefeituras da coluna A
+        carregarDadosParaSelect('buscarStatus', 'status');            // Status da coluna A
+        carregarDadosParaSelect('buscarAnalistas', 'analista');       // Analistas da coluna B
+        carregarDadosParaSelect('buscarApontamentos', 'apontamento'); // Apontamentos da coluna C
+        carregarDadosParaSelect('buscarSituacoes', 'situacao');       // Situações da coluna D
+
+        // Atualiza os campos dependentes quando a prefeitura for selecionada
+        document.getElementById('prefeitura').addEventListener('change', function() {
+            const prefeituraSelecionada = this.value;
+            if (prefeituraSelecionada) {
+                carregarDadosFiltrados('buscarFolhasPorPrefeitura', 'folha', prefeituraSelecionada);
+                carregarDadosFiltrados('buscarVerbasPorPrefeitura', 'verba', prefeituraSelecionada);
+                carregarDadosFiltrados('buscarLegislacoesPorPrefeitura', 'legislacao', prefeituraSelecionada);
+            } else {
+                // Limpa os campos dependentes se nenhuma prefeitura for selecionada
+                document.getElementById('folha').innerHTML = '';
+                document.getElementById('verba').innerHTML = '';
+                document.getElementById('legislacao').innerHTML = '';
             }
         });
 
-        carregarPrefeituras();
-        carregarLista('analista', 'ANALISTA');
-        carregarLista('status', 'STATUS');
-        carregarLista('apontamento', 'APONTAMENTO');
-        carregarLista('situacao', 'SITUACAO');
+        const sheetdbURL = "https://docs.google.com/spreadsheets/d/1CgPHHclx8d4HheHpeomOc7K92xSloUbKpGvWa2KH_gA/edit?gid=0#gid=0"; // Substitua pela URL da sua API SheetDB
+        const form = document.getElementById('dataForm');
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+
+            const formData = new FormData(form);
+            const dados = {};
+
+            // Converte os dados do formulário para um objeto
+            formData.forEach((value, key) => {
+                dados[key] = value;
+            });
+
+            // Envia os dados para a SheetDB API
+            fetch(sheetdbURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dados)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Dados enviados com sucesso!');
+                        form.reset(); // Limpa o formulário após o envio
+                    } else {
+                        alert('Erro ao enviar dados: ' + (data.error || '')); // Exibe a mensagem de erro da API ou uma mensagem genérica
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Ocorreu um erro ao enviar o formulário.');
+                });
+        });
+
+        // ... (seu código JavaScript para carregar dados dos selects via Apps Script)
+
+
+
     </script>
 </body>
 </html>
