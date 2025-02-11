@@ -1,52 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulário de Cadastro</title>
     <style>
-        body {
-            font-family: sans-serif;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 20px;
-        }
-        .column {
-            width: 45%;
-            margin: 10px;
-        }
-        .card {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin-bottom: 10px;
-        }
-        h2 {
-            margin-top: 0;
-        }
-        input, select, textarea {
-            width: calc(100% - 12px);
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-        textarea {
-            height: 150px;
-        }
-        .btn-cadastrar {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+        /* ... (seu CSS original) */
     </style>
 </head>
+
 <body>
     <form id="dataForm">
         <div class="container">
@@ -70,17 +33,22 @@
                 <div class="card">
                     <h2>Análise Jurídica e Descrição da Norma aplicada</h2>
                     <select id="legislacao" name="LEGISLACAO" required></select>
-                    <textarea id="descricao" name="DESCRICAO" placeholder="Descrição da Norma aplicada" required></textarea>
-                    <textarea id="analise" name="ANALISE" placeholder="Análise, Fundamentação e Orientação do Analista" required></textarea>
+                    <textarea id="descricao" name="DESCRICAO" placeholder="Descrição da Norma aplicada"
+                        required></textarea>
+                    <textarea id="analise" name="ANALISE" placeholder="Análise, Fundamentação e Orientação do Analista"
+                        required></textarea>
                     <button type="submit" class="btn-cadastrar">Cadastrar Análise</button>
                 </div>
             </div>
         </div>
     </form>
+
     <script>
         const scriptURL = "https://script.google.com/macros/s/AKfycby-Cuy9TRV2ANsGdBF4fpbNJ9Q0--HkIgOkJAZHJrvv70Z8gR1HZelxKiMwtUeQpTbFJw/exec"; // Substitua pelo seu URL
+        const sheetdbURL = "https://sheetdb.io/api/v1/714en56wgkm16?sheet=CADASTRO"; // URL da sua planilha SheetDB (aba "CADASTRO") // URL da sua planilha SheetDB
+        const form = document.getElementById('dataForm');
 
-        // Função para buscar dados da planilha e popular um select
+        // Função para buscar dados da planilha e popular um select (via Apps Script)
         function carregarDadosParaSelect(funcao, selectId) {
             google.script.run.withSuccessHandler(data => {
                 const select = document.getElementById(selectId);
@@ -93,16 +61,17 @@
                     console.error(data.error);
                     return;
                 }
+
                 data.forEach(value => {
                     const option = document.createElement('option');
                     option.value = value; // Valor da coluna
-                    option.text = value;  // Texto exibido
+                    option.text = value; // Texto exibido
                     select.appendChild(option);
                 });
             })[funcao](); // Chama a função correspondente
         }
 
-        // Função para carregar dados filtrados por prefeitura
+        // Função para carregar dados filtrados por prefeitura (via Apps Script)
         function carregarDadosFiltrados(funcao, selectId, prefeitura) {
             google.script.run.withSuccessHandler(data => {
                 const select = document.getElementById(selectId);
@@ -115,24 +84,25 @@
                     console.error(data.error);
                     return;
                 }
+
                 data.forEach(value => {
                     const option = document.createElement('option');
                     option.value = value; // Valor da coluna
-                    option.text = value;  // Texto exibido
+                    option.text = value; // Texto exibido
                     select.appendChild(option);
                 });
             })[funcao](prefeitura); // Chama a função correspondente com o filtro
         }
 
         // Carrega os dados iniciais
-        carregarDadosParaSelect('buscarPrefeituras', 'prefeitura');   // Prefeituras da coluna A
-        carregarDadosParaSelect('buscarStatus', 'status');            // Status da coluna A
-        carregarDadosParaSelect('buscarAnalistas', 'analista');       // Analistas da coluna B
+        carregarDadosParaSelect('buscarPrefeituras', 'prefeitura'); // Prefeituras da coluna A
+        carregarDadosParaSelect('buscarStatus', 'status'); // Status da coluna A
+        carregarDadosParaSelect('buscarAnalistas', 'analista'); // Analistas da coluna B
         carregarDadosParaSelect('buscarApontamentos', 'apontamento'); // Apontamentos da coluna C
-        carregarDadosParaSelect('buscarSituacoes', 'situacao');       // Situações da coluna D
+        carregarDadosParaSelect('buscarSituacoes', 'situacao'); // Situações da coluna D
 
         // Atualiza os campos dependentes quando a prefeitura for selecionada
-        document.getElementById('prefeitura').addEventListener('change', function() {
+        document.getElementById('prefeitura').addEventListener('change', function () {
             const prefeituraSelecionada = this.value;
             if (prefeituraSelecionada) {
                 carregarDadosFiltrados('buscarFolhasPorPrefeitura', 'folha', prefeituraSelecionada);
@@ -146,9 +116,7 @@
             }
         });
 
-        const sheetdbURL = "https://docs.google.com/spreadsheets/d/1CgPHHclx8d4HheHpeomOc7K92xSloUbKpGvWa2KH_gA/edit?gid=0#gid=0"; // Substitua pela URL da sua API SheetDB
-        const form = document.getElementById('dataForm');
-
+        // Envio para SheetDB
         form.addEventListener('submit', function (event) {
             event.preventDefault(); // Impede o envio padrão do formulário
 
@@ -166,7 +134,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(dados)
+                body: JSON.stringify(dados) // Envia o objeto diretamente
             })
                 .then(response => response.json())
                 .then(data => {
@@ -182,11 +150,7 @@
                     alert('Ocorreu um erro ao enviar o formulário.');
                 });
         });
-
-        // ... (seu código JavaScript para carregar dados dos selects via Apps Script)
-
-
-
     </script>
 </body>
+
 </html>
